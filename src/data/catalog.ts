@@ -1,0 +1,76 @@
+import type { CatalogItem, CategoryId } from "@/lib/types";
+
+export const CATEGORIES: Record<CategoryId, { label: string; emoji: string }> = {
+  graos: { label: "Grãos e cereais", emoji: "🌾" },
+  carnes: { label: "Carnes e aves", emoji: "🥩" },
+  laticinios: { label: "Laticínios e ovos", emoji: "🧀" },
+  hortifruti: { label: "Hortifruti", emoji: "🥬" },
+  padaria: { label: "Padaria e café", emoji: "☕" },
+  bebidas: { label: "Bebidas", emoji: "🥤" },
+  mercearia: { label: "Mercearia", emoji: "🥫" },
+  limpeza: { label: "Limpeza", emoji: "🧽" },
+  higiene: { label: "Higiene", emoji: "🧼" },
+};
+
+/**
+ * PREÇOS DE REFERÊNCIA ESTIMADOS PARA SP.
+ * Valores aproximados, escolhidos como ponto de partida; NÃO são preços medidos.
+ * Devem ser conferidos/substituídos por dados reais (ver docs/PRECOS.md).
+ */
+export const CATALOG: CatalogItem[] = [
+  { id: "arroz-5kg", name: "Arroz branco", category: "graos", unit: "5 kg", price: 30 },
+  { id: "feijao-1kg", name: "Feijão carioca", category: "graos", unit: "1 kg", price: 8.5 },
+  { id: "macarrao-500g", name: "Macarrão espaguete", category: "graos", unit: "500 g", price: 4.5 },
+  { id: "farinha-trigo-1kg", name: "Farinha de trigo", category: "graos", unit: "1 kg", price: 5.5 },
+  { id: "aveia-170g", name: "Aveia em flocos", category: "graos", unit: "170 g", price: 4.5 },
+  { id: "fuba-1kg", name: "Fubá", category: "graos", unit: "1 kg", price: 4.5 },
+  { id: "frango-peito-1kg", name: "Peito de frango", category: "carnes", unit: "1 kg", price: 20 },
+  { id: "carne-moida-1kg", name: "Carne moída", category: "carnes", unit: "1 kg", price: 38 },
+  { id: "acem-1kg", name: "Acém", category: "carnes", unit: "1 kg", price: 36 },
+  { id: "linguica-1kg", name: "Linguiça toscana", category: "carnes", unit: "1 kg", price: 22 },
+  { id: "file-peixe-1kg", name: "Filé de peixe", category: "carnes", unit: "1 kg", price: 35 },
+  { id: "sobrecoxa-1kg", name: "Sobrecoxa de frango", category: "carnes", unit: "1 kg", price: 14 },
+  { id: "ovos-12", name: "Ovos brancos", category: "laticinios", unit: "dúzia", price: 12 },
+  { id: "leite-1l", name: "Leite integral", category: "laticinios", unit: "1 L", price: 5.2 },
+  { id: "queijo-mussarela-1kg", name: "Queijo mussarela", category: "laticinios", unit: "1 kg", price: 44 },
+  { id: "manteiga-200g", name: "Manteiga", category: "laticinios", unit: "200 g", price: 12 },
+  { id: "iogurte-170g", name: "Iogurte natural", category: "laticinios", unit: "170 g", price: 2.8 },
+  { id: "requeijao-200g", name: "Requeijão cremoso", category: "laticinios", unit: "200 g", price: 8 },
+  { id: "banana-1kg", name: "Banana prata", category: "hortifruti", unit: "1 kg", price: 6 },
+  { id: "maca-1kg", name: "Maçã", category: "hortifruti", unit: "1 kg", price: 9 },
+  { id: "tomate-1kg", name: "Tomate", category: "hortifruti", unit: "1 kg", price: 7 },
+  { id: "cebola-1kg", name: "Cebola", category: "hortifruti", unit: "1 kg", price: 5 },
+  { id: "batata-1kg", name: "Batata", category: "hortifruti", unit: "1 kg", price: 6 },
+  { id: "cenoura-1kg", name: "Cenoura", category: "hortifruti", unit: "1 kg", price: 5 },
+  { id: "alface-un", name: "Alface", category: "hortifruti", unit: "unidade", price: 3.5 },
+  { id: "laranja-1kg", name: "Laranja", category: "hortifruti", unit: "1 kg", price: 4.5 },
+  { id: "limao-1kg", name: "Limão", category: "hortifruti", unit: "1 kg", price: 6 },
+  { id: "pao-forma-500g", name: "Pão de forma", category: "padaria", unit: "500 g", price: 8 },
+  { id: "cafe-500g", name: "Café torrado e moído", category: "padaria", unit: "500 g", price: 24 },
+  { id: "acucar-1kg", name: "Açúcar refinado", category: "padaria", unit: "1 kg", price: 5 },
+  { id: "biscoito-recheado", name: "Biscoito recheado", category: "padaria", unit: "120 g", price: 3 },
+  { id: "bolacha-agua-sal", name: "Biscoito água e sal", category: "padaria", unit: "400 g", price: 5 },
+  { id: "refrigerante-2l", name: "Refrigerante", category: "bebidas", unit: "2 L", price: 9 },
+  { id: "suco-1l", name: "Suco de caixinha", category: "bebidas", unit: "1 L", price: 7 },
+  { id: "agua-1-5l", name: "Água mineral", category: "bebidas", unit: "1,5 L", price: 2.5 },
+  { id: "cerveja-lata", name: "Cerveja lata", category: "bebidas", unit: "350 ml", price: 4 },
+  { id: "oleo-900ml", name: "Óleo de soja", category: "mercearia", unit: "900 ml", price: 7.5 },
+  { id: "sal-1kg", name: "Sal refinado", category: "mercearia", unit: "1 kg", price: 3 },
+  { id: "molho-tomate-340g", name: "Molho de tomate", category: "mercearia", unit: "340 g", price: 3.5 },
+  { id: "azeite-500ml", name: "Azeite de oliva", category: "mercearia", unit: "500 ml", price: 38 },
+  { id: "atum-170g", name: "Atum em lata", category: "mercearia", unit: "170 g", price: 9 },
+  { id: "milho-lata", name: "Milho em conserva", category: "mercearia", unit: "170 g", price: 3.5 },
+  { id: "maionese-500g", name: "Maionese", category: "mercearia", unit: "500 g", price: 8 },
+  { id: "detergente-500ml", name: "Detergente", category: "limpeza", unit: "500 ml", price: 2.5 },
+  { id: "sabao-po-1kg", name: "Sabão em pó", category: "limpeza", unit: "1 kg", price: 14 },
+  { id: "agua-sanitaria-2l", name: "Água sanitária", category: "limpeza", unit: "2 L", price: 6 },
+  { id: "desinfetante-1l", name: "Desinfetante", category: "limpeza", unit: "1 L", price: 6 },
+  { id: "esponja-3un", name: "Esponja de cozinha", category: "limpeza", unit: "3 un", price: 4 },
+  { id: "papel-higienico-12", name: "Papel higiênico", category: "higiene", unit: "12 rolos", price: 18 },
+  { id: "sabonete-un", name: "Sabonete", category: "higiene", unit: "90 g", price: 2.5 },
+  { id: "shampoo-350ml", name: "Shampoo", category: "higiene", unit: "350 ml", price: 12 },
+  { id: "creme-dental-90g", name: "Creme dental", category: "higiene", unit: "90 g", price: 4.5 },
+  { id: "desodorante-un", name: "Desodorante", category: "higiene", unit: "150 ml", price: 13 },
+];
+
+export const CATALOG_BY_ID = new Map(CATALOG.map((i) => [i.id, i]));
