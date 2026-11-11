@@ -34,6 +34,8 @@ export interface ShoppingList {
   id: string;
   name: string;
   budget: number | null;
+  /** Mercado onde a compra está sendo feita (para registrar preços). */
+  marketId?: string | null;
   items: ListItem[];
   updatedAt: number;
 }
@@ -51,4 +53,24 @@ export interface RetailerProfile {
 export interface RetailerTotal {
   retailer: RetailerProfile;
   total: number;
+}
+
+export interface Market {
+  id: string;
+  name: string;
+}
+
+/** Último preço unitário observado de um item em um mercado. */
+export interface PriceObservation {
+  price: number;
+  at: number;
+}
+
+/** Chave `${marketId}|${itemKey}` -> observação. */
+export type PriceBook = Record<string, PriceObservation>;
+
+export interface AppState {
+  lists: ShoppingList[];
+  markets: Market[];
+  prices: PriceBook;
 }

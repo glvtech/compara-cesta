@@ -32,3 +32,25 @@ describe("compare", () => {
     expect(cartTotal(items, false)).toBe(80); // 50 + 30 (referência)
   });
 });
+
+import { compareMarkets, marketFactor } from "../prices";
+
+describe("mercados reais", () => {
+  const markets = [{ id: "a", name: "A" }, { id: "b", name: "B" }];
+  it("usa o preço observado e estima o resto com o fator do mercado", () => {
+    const items = [item({ quantity: 2 }), item({ id: "f", catalogId: "feijao-1kg", category: "graos" })];
+    const prices = { "a|arroz-5kg": { price: 20, at: 1 } };
+    const r = compareMarkets(items, markets, prices);
+    const a = r.find((x) => x.market.id === "a")!;
+    expect(a.known).toBe(1);
+    // arroz: 20*2 = 40; feijão: 8,5 * fator(a)
+    expect(a.total).toBeCloseTo(40 + 8.5 * marketFactor("a", prices), 2);
+    expect(r[0].market.id).toBe("a"); // A é mais barato que B (referência)
+  });
+  it("itens livres só entram com preço observado", () => {
+    const livre = item({ catalogId: null, name: "Pão francês" });
+    const r = compareMarkets([livre], markets, { "b|livre:pao frances": { price: 10, at: 1 } });
+    expect(r.find((x) => x.market.id === "b")!.total).toBe(10);
+    expect(r.find((x) => x.market.id === "a")!.unpriced).toBe(1);
+  });
+});

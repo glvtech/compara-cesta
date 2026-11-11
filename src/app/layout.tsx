@@ -23,6 +23,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <Link href="/comparar" className="flex-1 py-3 text-center text-sm font-medium hover:bg-slate-50">
                 🏪 Comparar
               </Link>
+              <Link href="/mercados" className="flex-1 py-3 text-center text-sm font-medium hover:bg-slate-50">
+                📍 Mercados
+              </Link>
             </div>
           </nav>
         </div>

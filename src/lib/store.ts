@@ -1,26 +1,33 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { CatalogItem, CategoryId, ListItem, ShoppingList } from "./types";
+import { itemKey, priceKey } from "./prices";
+import type { AppState, CatalogItem, CategoryId, ListItem, Market, ShoppingList } from "./types";
 
-const KEY = "compara-cesta:v1";
-const EMPTY: ShoppingList[] = [];
+const KEY = "compara-cesta:v2";
+const LEGACY_KEY = "compara-cesta:v1";
+const EMPTY: AppState = { lists: [], markets: [], prices: {} };
 
-let cache: ShoppingList[] | null = null;
+let cache: AppState | null = null;
 const listeners = new Set<() => void>();
 
-function read(): ShoppingList[] {
+function read(): AppState {
   if (cache) return cache;
   try {
     const raw = window.localStorage.getItem(KEY);
-    cache = raw ? (JSON.parse(raw) as ShoppingList[]) : [];
+    if (raw) {
+      cache = { ...EMPTY, ...(JSON.parse(raw) as Partial<AppState>) };
+    } else {
+      const legacy = window.localStorage.getItem(LEGACY_KEY);
+      cache = { ...EMPTY, lists: legacy ? (JSON.parse(legacy) as ShoppingList[]) : [] };
+    }
   } catch {
-    cache = [];
+    cache = { ...EMPTY };
   }
   return cache;
 }
 
-function write(next: ShoppingList[]) {
+function write(next: AppState) {
   cache = next;
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
@@ -45,32 +52,36 @@ function subscribe(cb: () => void) {
   };
 }
 
-export function useLists(): ShoppingList[] {
-  return useSyncExternalStore(subscribe, read, () => EMPTY);
-}
-
-export function useList(id: string): ShoppingList | undefined {
-  return useLists().find((l) => l.id === id);
-}
+export const useAppState = (): AppState => useSyncExternalStore(subscribe, read, () => EMPTY);
+export const useLists = (): ShoppingList[] => useAppState().lists;
+export const useMarkets = (): Market[] => useAppState().markets;
+export const useList = (id: string): ShoppingList | undefined => useLists().find((l) => l.id === id);
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
 function mutate(listId: string, fn: (l: ShoppingList) => ShoppingList) {
-  write(read().map((l) => (l.id === listId ? { ...fn(l), updatedAt: Date.now() } : l)));
+  const s = read();
+  write({ ...s, lists: s.lists.map((l) => (l.id === listId ? { ...fn(l), updatedAt: Date.now() } : l)) });
 }
 
 export function createList(name: string, budget: number | null = null): string {
-  const list: ShoppingList = { id: uid(), name: name.trim() || "Nova lista", budget, items: [], updatedAt: Date.now() };
-  write([list, ...read()]);
+  const list: ShoppingList = { id: uid(), name: name.trim() || "Nova lista", budget, marketId: null, items: [], updatedAt: Date.now() };
+  const s = read();
+  write({ ...s, lists: [list, ...s.lists] });
   return list.id;
 }
 
 export function deleteList(id: string) {
-  write(read().filter((l) => l.id !== id));
+  const s = read();
+  write({ ...s, lists: s.lists.filter((l) => l.id !== id) });
 }
 
 export function setBudget(listId: string, budget: number | null) {
   mutate(listId, (l) => ({ ...l, budget }));
+}
+
+export function setListMarket(listId: string, marketId: string | null) {
+  mutate(listId, (l) => ({ ...l, marketId }));
 }
 
 export function addCatalogItem(listId: string, item: CatalogItem) {
@@ -107,4 +118,31 @@ export function updateItem(listId: string, itemId: string, patch: Partial<ListIt
 
 export function removeItem(listId: string, itemId: string) {
   mutate(listId, (l) => ({ ...l, items: l.items.filter((i) => i.id !== itemId) }));
+}
+
+/** Anota o preço pago e, se há mercado escolhido na lista, grava no histórico desse mercado. */
+export function recordPrice(listId: string, item: ListItem, price: number | null) {
+  updateItem(listId, item.id, { paidPrice: price });
+  const s = read();
+  const list = s.lists.find((l) => l.id === listId);
+  if (!list?.marketId || price === null) return;
+  write({ ...read(), prices: { ...read().prices, [priceKey(list.marketId, itemKey(item))]: { price, at: Date.now() } } });
+}
+
+export function addMarket(name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  const s = read();
+  write({ ...s, markets: [...s.markets, { id: uid(), name: trimmed }] });
+}
+
+export function removeMarket(id: string) {
+  const s = read();
+  const prices = Object.fromEntries(Object.entries(s.prices).filter(([k]) => !k.startsWith(`${id}|`)));
+  write({
+    ...s,
+    markets: s.markets.filter((m) => m.id !== id),
+    prices,
+    lists: s.lists.map((l) => (l.marketId === id ? { ...l, marketId: null } : l)),
+  });
 }

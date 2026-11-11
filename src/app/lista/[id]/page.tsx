@@ -6,7 +6,8 @@ import { useState } from "react";
 import { AddItem } from "@/components/AddItem";
 import { CATEGORIES } from "@/data/catalog";
 import { brl, cartTotal, referencePrice } from "@/lib/compare";
-import { removeItem, setBudget, updateItem, useList } from "@/lib/store";
+import { recordPrice, removeItem, setBudget, setListMarket, updateItem, useAppState, useList } from "@/lib/store";
+import { itemKey, priceKey } from "@/lib/prices";
 import type { CategoryId, ListItem } from "@/lib/types";
 
 function PriceNote({ listId, item }: { listId: string; item: ListItem }) {
@@ -15,7 +16,7 @@ function PriceNote({ listId, item }: { listId: string; item: ListItem }) {
 
   function save() {
     const n = parseFloat(val.replace(",", "."));
-    updateItem(listId, item.id, { paidPrice: Number.isFinite(n) && n >= 0 ? n : null });
+    recordPrice(listId, item, Number.isFinite(n) && n >= 0 ? n : null);
     setEditing(false);
   }
 
@@ -45,6 +46,7 @@ function PriceNote({ listId, item }: { listId: string; item: ListItem }) {
 export default function ListPage() {
   const { id } = useParams<{ id: string }>();
   const list = useList(id);
+  const { markets, prices } = useAppState();
 
   if (!list) {
     return (
@@ -113,7 +115,11 @@ export default function ListPage() {
               <div className="mt-1 flex items-center justify-between pl-8">
                 <PriceNote listId={list.id} item={it} />
                 <span className="text-xs text-slate-400">
-                  {referencePrice(it) !== null ? `ref. ${brl(referencePrice(it)!)}` : "sem referência"}
+                  {(() => {
+                    const here = list.marketId ? prices[priceKey(list.marketId, itemKey(it))] : undefined;
+                    if (here) return `aqui: ${brl(here.price)}`;
+                    return referencePrice(it) !== null ? `ref. ${brl(referencePrice(it)!)}` : "sem referência";
+                  })()}
                 </span>
                 <button aria-label={`Remover ${it.name}`} onClick={() => removeItem(list.id, it.id)} className="text-slate-400 hover:text-red-600">🗑</button>
               </div>
@@ -128,6 +134,25 @@ export default function ListPage() {
           <span className="text-xs text-blue-100">Previsto: {brl(planned)}</span>
         </div>
         <div className="text-3xl font-bold">{brl(spent)}</div>
+        <label className="flex items-center gap-2 text-sm">
+          Mercado
+          <select
+            value={list.marketId ?? ""}
+            onChange={(e) => setListMarket(list.id, e.target.value || null)}
+            className="min-w-0 flex-1 rounded bg-white/90 px-2 py-1 text-slate-900"
+          >
+            <option value="">— escolher —</option>
+            {markets.map((m) => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+        </label>
+        {markets.length === 0 && (
+          <Link href="/mercados" className="block text-xs underline">Cadastre seus mercados para guardar os preços</Link>
+        )}
+        {markets.length > 0 && !list.marketId && (
+          <p className="text-xs text-blue-100">Escolha o mercado para os preços anotados irem para o histórico dele.</p>
+        )}
         <label className="flex items-center gap-2 text-sm">
           Orçamento
           <input
