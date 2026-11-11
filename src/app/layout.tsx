@@ -28,6 +28,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <Link href="/mercados" className="flex-1 py-3 text-center text-sm font-medium hover:bg-slate-50">
                 📍 Mercados
               </Link>
+              <Link href="/escanear" className="flex-1 py-3 text-center text-sm font-medium hover:bg-slate-50">
+                📷 Escanear
+              </Link>
               <Link href="/conta" className="flex-1 py-3 text-center text-sm font-medium hover:bg-slate-50">
                 👤 Conta
               </Link>

@@ -170,3 +170,12 @@ export function removeMarket(id: string) {
     lists: s.lists.map((l) => (l.marketId === id ? { ...l, marketId: null } : l)),
   });
 }
+
+/** Grava vários preços de uma vez (ex.: itens lidos de uma nota) no histórico de um mercado. */
+export function savePrices(marketId: string, entries: { key: string; price: number }[]) {
+  const s = read();
+  const prices = { ...s.prices };
+  const at = Date.now();
+  for (const e of entries) prices[priceKey(marketId, e.key)] = { price: e.price, at };
+  write({ ...s, prices });
+}
