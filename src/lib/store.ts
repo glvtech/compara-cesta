@@ -6,7 +6,7 @@ import type { AppState, CatalogItem, CategoryId, ListItem, Market, ShoppingList 
 
 const KEY = "compara-cesta:v2";
 const LEGACY_KEY = "compara-cesta:v1";
-const EMPTY: AppState = { lists: [], markets: [], prices: {} };
+const EMPTY: AppState = { lists: [], markets: [], prices: {}, deleted: {} };
 
 let cache: AppState | null = null;
 const listeners = new Set<() => void>();
@@ -35,6 +35,7 @@ function write(next: AppState) {
     /* armazenamento indisponível: mantém só em memória */
   }
   listeners.forEach((l) => l());
+  if (!silent) changeListeners.forEach((l) => l());
 }
 
 function subscribe(cb: () => void) {
@@ -49,6 +50,28 @@ function subscribe(cb: () => void) {
   return () => {
     listeners.delete(cb);
     window.removeEventListener("storage", onStorage);
+  };
+}
+
+export const getState = (): AppState => read();
+
+/** Substitui o estado (usado pela sincronização). `silent` não dispara novo envio ao servidor. */
+let silent = false;
+export function replaceState(next: AppState) {
+  silent = true;
+  try {
+    write(next);
+  } finally {
+    silent = false;
+  }
+}
+
+const changeListeners = new Set<() => void>();
+/** Avisa só de mudanças feitas pelo usuário (não das vindas do servidor). */
+export function onLocalChange(cb: () => void) {
+  changeListeners.add(cb);
+  return () => {
+    changeListeners.delete(cb);
   };
 }
 
@@ -73,7 +96,7 @@ export function createList(name: string, budget: number | null = null): string {
 
 export function deleteList(id: string) {
   const s = read();
-  write({ ...s, lists: s.lists.filter((l) => l.id !== id) });
+  write({ ...s, lists: s.lists.filter((l) => l.id !== id), deleted: { ...s.deleted, [id]: Date.now() } });
 }
 
 export function setBudget(listId: string, budget: number | null) {
@@ -143,6 +166,7 @@ export function removeMarket(id: string) {
     ...s,
     markets: s.markets.filter((m) => m.id !== id),
     prices,
+    deleted: { ...s.deleted, [id]: Date.now() },
     lists: s.lists.map((l) => (l.marketId === id ? { ...l, marketId: null } : l)),
   });
 }

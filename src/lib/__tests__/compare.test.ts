@@ -54,3 +54,30 @@ describe("mercados reais", () => {
     expect(r.find((x) => x.market.id === "a")!.unpriced).toBe(1);
   });
 });
+
+import { mergeStates } from "../merge";
+import type { AppState } from "../types";
+
+describe("sincronização (merge)", () => {
+  const base: AppState = { lists: [], markets: [], prices: {}, deleted: {} };
+  const L = (id: string, updatedAt: number) => ({ id, name: id, budget: null, items: [], updatedAt });
+
+  it("fica com a lista mais recente e une listas diferentes", () => {
+    const m = mergeStates({ ...base, lists: [L("a", 1), L("b", 5)] }, { ...base, lists: [L("a", 3)] });
+    expect(m.lists.map((l) => [l.id, l.updatedAt]).sort()).toEqual([["a", 3], ["b", 5]]);
+  });
+  it("remoção mais nova vence e não ressuscita a lista", () => {
+    const m = mergeStates({ ...base, lists: [L("a", 1)] }, { ...base, deleted: { a: 9 } });
+    expect(m.lists).toHaveLength(0);
+  });
+  it("preço mais recente vence e mercado removido leva seus preços", () => {
+    const m = mergeStates(
+      { ...base, markets: [{ id: "x", name: "X" }], prices: { "x|arroz": { price: 1, at: 1 } } },
+      { ...base, markets: [{ id: "x", name: "X" }], prices: { "x|arroz": { price: 2, at: 2 } } },
+    );
+    expect(m.prices["x|arroz"].price).toBe(2);
+    const gone = mergeStates(m, { ...base, deleted: { x: 5 } });
+    expect(gone.markets).toHaveLength(0);
+    expect(Object.keys(gone.prices)).toHaveLength(0);
+  });
+});

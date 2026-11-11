@@ -73,4 +73,6 @@ export interface AppState {
   lists: ShoppingList[];
   markets: Market[];
   prices: PriceBook;
+  /** Remoções (id -> quando), para a sincronização não "ressuscitar" itens apagados. */
+  deleted: Record<string, number>;
 }
